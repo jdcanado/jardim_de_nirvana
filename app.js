@@ -27,6 +27,8 @@ app.get('/', function (req, res) {
 
 app.use('/js', express.static(__dirname + '/client/js'));
 
+app.use('/lib', express.static(__dirname + '/client/lib'));
+
 //REST API
 app.get('/api/meetups', meetupsController.list);
 app.post('/api/meetups', meetupsController.create);
