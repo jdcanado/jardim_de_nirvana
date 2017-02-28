@@ -15,9 +15,18 @@ var express           = require('express'),
     app               = express(),
     bodyParser        = require('body-parser'),
     mongoose          = require('mongoose'),
-    meetupsController = require('./server/controllers/meetups-controller');
+    passport		  = require('passport'),
+    meetupsController = require('./server/controllers/meetups-controller'),
+    jwt               = require('express-jwt'),
+    auth              = jwt({secret: 'SECRET', userProperty: 'payload'});
+
+require('./server/models/Users');
+
+require('./config/passport');
 
 mongoose.connect('mongodb://localhost:27017/jdc_terrario');
+
+var User = mongoose.model('User');
 
 app.use(bodyParser());
 
@@ -29,9 +38,46 @@ app.use('/js', express.static(__dirname + '/client/js'));
 
 app.use('/lib', express.static(__dirname + '/client/lib'));
 
+app.use(passport.initialize());
+
 //REST API
-app.get('/api/meetups', meetupsController.list);
-app.post('/api/meetups', meetupsController.create);
+app.post('/register', function(req, res, next){
+  if(!req.body.username || !req.body.password){
+    return res.status(400).json({message: 'Please fill out all fields'});
+  }
+
+  var user = new User();
+
+  user.username = req.body.username;
+
+  user.setPassword(req.body.password)
+
+  user.save(function (err){
+    if(err){ return next(err); }
+
+    return res.json({token: user.generateJWT()})
+  });
+});
+
+app.post('/login', function(req, res, next){
+  if(!req.body.username || !req.body.password){
+    return res.status(400).json({message: 'Please fill out all fields'});
+  }
+
+  passport.authenticate('local', function(err, user, info){
+    if(err){ return next(err); }
+
+    if(user){
+      return res.json({token: user.generateJWT()});
+    } else {
+      return res.status(401).json(info);
+    }
+  })(req, res, next);
+});
+
+app.get('/api/meetups', auth, meetupsController.create);
+
+app.post('/api/meetups', auth, meetupsController.create);
 
 app.listen((process.env.PORT || 8080), function() {
   console.log('I\'m Listening...');

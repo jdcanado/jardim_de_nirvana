@@ -7,9 +7,14 @@
     "deploy": "gcloud app deploy app.yaml --promote"
   },
   "dependencies": {
-    "express": "^4.3.1",
     "body-parser": "^1.2.2",
+    "crypto": "0.0.3",
+    "express": "^4.3.1",
+    "express-jwt": "^5.1.0",
+    "jsonwebtoken": "^7.3.0",
+    "kerberos": "^0.0.17",
     "mongoose": "^4.x.x",
-    "kerberos": "^0.0.17"
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0"
   }
 }
